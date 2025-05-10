@@ -20,7 +20,7 @@ class ExtractMetadataByKey:
     RETURN_NAMES = ("value",)
 
     FUNCTION = "extract"
-    CATEGORY = "image/metadata"
+    CATEGORY = "northTools"
 
     def extract(self, metadata, key):
         try:

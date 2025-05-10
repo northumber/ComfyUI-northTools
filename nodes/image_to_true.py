@@ -13,6 +13,7 @@ class ImageToTrue:
 
     RETURN_TYPES = ("BOOLEAN",)
     FUNCTION = "process"
+    CATEGORY = "northTools"
 
     def process(self, image):
         return (True,)

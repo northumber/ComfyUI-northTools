@@ -21,7 +21,7 @@ class LoadImagesFromDirByIndexBatch:
 
     RETURN_TYPES = ("IMAGE", "MASK", "INT")
     FUNCTION = "load_images"
-    CATEGORY = "image"
+    CATEGORY = "northTools"
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):

@@ -23,7 +23,7 @@ class LoadImagesFromDirByIndexList:
     RETURN_NAMES = ("IMAGE", "MASK", "FILE PATH", "METADATA", "INDEX COUNT")
     OUTPUT_IS_LIST = (True, True, True, True, True)
     FUNCTION = "load_images"
-    CATEGORY = "image"
+    CATEGORY = "northTools"
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):

@@ -19,7 +19,7 @@ class ConcatHistoryString:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("concatenated",)
     FUNCTION = "concat"
-    CATEGORY = "util"
+    CATEGORY = "northTools"
 
     def concat(self, value_bool=None, value_str="", reset=False):
         if reset:

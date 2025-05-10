@@ -16,6 +16,7 @@ class SumIntegers:
     RETURN_TYPES = ("INT", "STRING")
     RETURN_NAMES = ("sum_int", "sum_str")
     FUNCTION = "sum"
+    CATEGORY = "northTools"
 
     def sum(self, int_1, int_2):
         s = int_1 + int_2

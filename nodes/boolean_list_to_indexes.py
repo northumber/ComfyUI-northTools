@@ -21,7 +21,7 @@ class BooleanIndexesToString:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("index_string",)
     FUNCTION = "get_indexes"
-    CATEGORY = "util"
+    CATEGORY = "northTools"
 
     @staticmethod
     def parse_bool_string(s: str) -> list[bool]:

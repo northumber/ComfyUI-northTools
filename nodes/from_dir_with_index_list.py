@@ -4,12 +4,12 @@ import numpy as np
 from PIL import Image, ImageOps
 
 """
-    Load an image batch from directory using an index string to get positions: "0,2,5,...n"
+    Load an image list from directory using an index string to get positions: "0,2,5,...n"
 """
 
-class LoadImagesFromDirByIndexBatch:
+class LoadImagesFromDirByIndexList:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "directory": ("STRING", {"default": ""}),
@@ -19,7 +19,9 @@ class LoadImagesFromDirByIndexBatch:
             }
         }
 
-    RETURN_TYPES = ("IMAGE", "MASK", "INT")
+    RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING", "INT")
+    RETURN_NAMES = ("IMAGE", "MASK", "FILE PATH", "METADATA", "INDEX COUNT")
+    OUTPUT_IS_LIST = (True, True, True, True, True)
     FUNCTION = "load_images"
     CATEGORY = "image"
 
@@ -39,32 +41,51 @@ class LoadImagesFromDirByIndexBatch:
 
     def load_images(self, directory: str, indices: str = ""):
         if not os.path.isdir(directory):
-            return (None, None, 0)
+            raise FileNotFoundError(f"Directory '{directory}' cannot be found.")
+
         dir_files = os.listdir(directory)
         valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
         dir_files = [f for f in dir_files if any(f.lower().endswith(ext) for ext in valid_extensions)]
         dir_files = sorted(dir_files)
+        if not dir_files:
+            raise FileNotFoundError(f"No valid image files in directory '{directory}'.")
+
         if not indices.strip():
             raise StopIteration("Waiting for valid indices string.")
+
         index_list = self._parse_indices(indices, len(dir_files))
         if not index_list:
             raise StopIteration("Waiting for valid indices string.")
-        selected_files = [os.path.join(directory, dir_files[i]) for i in index_list]
+
         images = []
         masks = []
-        for path in selected_files:
-            i = Image.open(path)
+        file_paths = []
+        metadatas = []
+        indexes = []
+
+        for idx in index_list:
+            image_path = os.path.join(directory, dir_files[idx])
+            i = Image.open(image_path)
             i = ImageOps.exif_transpose(i)
+            metadata = i.info.copy()
+            exif = i.getexif()
+            if exif:
+                metadata['exif'] = dict(exif)
+            metadatas.append(str(metadata))
+
             image = i.convert("RGB")
-            image_np = np.array(image).astype(np.float32) / 255.0
-            image_tensor = torch.from_numpy(image_np)[None,]
+            image = np.array(image).astype(np.float32) / 255.0
+            image = torch.from_numpy(image)[None,]
+
             if 'A' in i.getbands():
-                mask_np = np.array(i.getchannel('A')).astype(np.float32) / 255.0
-                mask_tensor = 1. - torch.from_numpy(mask_np)
+                mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
+                mask = 1. - torch.from_numpy(mask)
             else:
-                mask_tensor = torch.zeros((image_tensor.shape[2], image_tensor.shape[3]), dtype=torch.float32)
-            images.append(image_tensor)
-            masks.append(mask_tensor)
-        image_batch = torch.cat(images, dim=0) if len(images) > 1 else images[0]
-        mask_batch = torch.stack(masks, dim=0) if len(masks) > 1 else masks[0]
-        return (image_batch, mask_batch, len(images))
+                mask = torch.zeros((image.shape[2], image.shape[3]), dtype=torch.float32)
+
+            images.append(image)
+            masks.append(mask)
+            file_paths.append(str(image_path))
+            indexes.append(idx)
+
+        return (images, masks, file_paths, metadatas, indexes)

@@ -10,7 +10,7 @@ from PIL import Image, ImageOps
 
 class LoadImagesFromDirList:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "directory": ("STRING", {"default": ""}),
@@ -22,9 +22,9 @@ class LoadImagesFromDirList:
             }
         }
 
-    RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING")
-    RETURN_NAMES = ("IMAGE", "MASK", "FILE PATH", "METADATA")
-    OUTPUT_IS_LIST = (True, True, True, True)
+    RETURN_TYPES = ("IMAGE", "MASK", "STRING", "STRING", "INT")
+    RETURN_NAMES = ("IMAGE", "MASK", "FILE PATH", "METADATA", "INDEX COUNT")
+    OUTPUT_IS_LIST = (True, True, True, True, True)
     FUNCTION = "load_images"
     CATEGORY = "image"
 
@@ -46,18 +46,19 @@ class LoadImagesFromDirList:
         valid_extensions = ['.jpg', '.jpeg', '.png', '.webp']
         dir_files = [f for f in dir_files if any(f.lower().endswith(ext) for ext in valid_extensions)]
         dir_files = sorted(dir_files)
-        dir_files = [os.path.join(directory, x) for x in dir_files]
-        dir_files = dir_files[start_index:]
+        dir_files_full = [os.path.join(directory, x) for x in dir_files]
+        dir_files_full = dir_files_full[start_index:]
 
         images = []
         masks = []
         file_paths = []
         metadatas = []
+        indexes = []
 
         limit_images = image_load_cap > 0
         image_count = 0
 
-        for image_path in dir_files:
+        for idx, image_path in enumerate(dir_files_full):
             if os.path.isdir(image_path):
                 continue
             if limit_images and image_count >= image_load_cap:
@@ -65,7 +66,6 @@ class LoadImagesFromDirList:
 
             i = Image.open(image_path)
             i = ImageOps.exif_transpose(i)
-            # Extract metadata BEFORE conversion
             metadata = i.info.copy()
             exif = i.getexif()
             if exif:
@@ -85,6 +85,7 @@ class LoadImagesFromDirList:
             images.append(image)
             masks.append(mask)
             file_paths.append(str(image_path))
+            indexes.append(idx + start_index)
             image_count += 1
 
-        return (images, masks, file_paths, metadatas)
+        return (images, masks, file_paths, metadatas, indexes)

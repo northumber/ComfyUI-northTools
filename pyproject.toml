@@ -1,0 +1,15 @@
+[project]
+name = "northtools"
+description = "Collection of nodes for ComfyUI for automation"
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["pillow", "numpy", "torch"]
+
+[project.urls]
+Repository = "https://github.com/northumber/ComfyUI-northTools"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-northTools"
+Icon = ""

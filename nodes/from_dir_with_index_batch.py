@@ -62,9 +62,10 @@ class LoadImagesFromDirByIndexBatch:
                 mask_np = np.array(i.getchannel('A')).astype(np.float32) / 255.0
                 mask_tensor = 1. - torch.from_numpy(mask_np)
             else:
-                mask_tensor = torch.zeros((image_tensor.shape[2], image_tensor.shape[3]), dtype=torch.float32)
+                # use image_tensor's height and width
+                mask_tensor = torch.zeros((image_tensor.shape[1], image_tensor.shape[2]), dtype=torch.float32)
             images.append(image_tensor)
             masks.append(mask_tensor)
-        image_batch = torch.cat(images, dim=0) if len(images) > 1 else images[0]
-        mask_batch = torch.stack(masks, dim=0) if len(masks) > 1 else masks[0]
+        image_batch = torch.cat(images, dim=0) if images else torch.zeros(0)
+        mask_batch = torch.stack(masks, dim=0) if masks else torch.zeros(0)
         return (image_batch, mask_batch, len(images))
